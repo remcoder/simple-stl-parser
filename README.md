@@ -1,6 +1,6 @@
-*Looking for a shareable component template? Go here --> [sveltejs/component-template](https://github.com/sveltejs/component-template)*
+# Simple STL parser
 
----
+<img width="726" alt="image" src="https://github.com/remcoder/simple-stl-parser/assets/461650/a75b316c-79f2-47b7-bd29-68fa97ad9e6d">
 
 # svelte app
 
