@@ -1,15 +1,17 @@
 <script>
 	/*
+	- auto scaling / zooming based on the bounding box
 	- shading based on the normal
 	- point light source
 	- rotation along a single axis
 	- backface culling
-	- draggable light source in the xy plane (fixed z)
 	*/
+
 	import { onMount } from 'svelte';
 	import { parseSolid } from './parser';
 	
 	export let name;
+	let selected;
 	const scale = 200;
 	const zFactor = 5;
 	const drawAxis = false;
@@ -47,21 +49,32 @@
 
 	// const canvas = document.getElementsByTagName('canvas');
 	
-	onMount(render);
+	onMount(() => {
+		selected = 'teapot.stl';
+	});
+
 	
-	async function render() {
+	$: {
+		if (selected)
+			render(selected);
+	}
+	
+	async function render(filename) {
 		ctx = canvas.getContext('2d');
 		// ctx.scale(scale,scale);
 		ctx.lineWidth = 2/scale;
 		const width = canvas.width;
 		const height = canvas.height;
 
-		const response = await fetch('teapot.stl');
+		const response = await fetch('files/' + filename);
 		const data = await response.text();
-		
+
+		if (data[0] == '<') {
+			console.error('file probably not found');
+			return;
+		}
 		const { facets, stlName } = parseSolid(data)///.slice(0,3);
 		name = stlName;
-		console.log(name);
 		
 		console.time('analyzing');
 		analyze(facets);
@@ -120,7 +133,7 @@
 		for (let f=0 ; f<facets.length ; f++) {
 			const facet = facets[f];
 			if (facet.normal.z > 0)
-				drawFacet(facet, 'black', f % 2 == 0 ? 'grey' : 'dimgrey');
+				drawFacet(facet, 'black', f % 2 == 0 ? 'grey' : 'grey');
 				//drawFacet(facet, 'black', '#' + Math.floor(Math.random()*16777215).toString(16));
 			// console.log(facets[f]);
 			// break;
@@ -261,7 +274,17 @@
 </script>
 
 <main>
-	<h2>{name}</h2>
+	<h2>
+		<select  bind:value={selected} >
+		<option>teapot.stl</option>
+		<option>block100.stl</option>
+		<option>bottle.stl</option>
+		<option>humanoid.stl</option>
+		<option>humanoid_tri.stl</option>
+		<option>magnolia.stl</option>
+		<option>space_invader_magnet.stl</option>
+		<option>sphere.stl</option>
+	</select>{name}</h2>
 	<canvas
 		bind:this={canvas}
 		width=1024
