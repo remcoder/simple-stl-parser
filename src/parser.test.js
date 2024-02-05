@@ -4,7 +4,7 @@ import {
   parseVertex,
   parseFPNumber,
   digit,
-  setInput, parseNumber,
+  setInput, parseNumber, parseScientificNumber,
   sequence,
   expect,
   many
@@ -78,6 +78,13 @@ describe('parseVertex', () => {
     const result = parseVertex();
     test(result).toEqual({ x: 1, y: 4.2, z: -3 });
   });
+
+  it('should parse a vertex with scientific notiation', () => {
+    const data = `vertex -1e-1 4.2 -3\n`;
+    setInput(data);
+    const result = parseVertex();
+    test(result).toEqual({ x: -0.1, y: 4.2, z: -3 });
+  });
 });
 
 // test number
@@ -92,6 +99,27 @@ describe('parseNumber', () => {
     const data = `0.42`;
     setInput(data);
     const result = parseNumber();
+  });
+
+  it('should parse a number in scientific notation', () => {
+    const data = `1E-1`;
+    setInput(data);
+    const result = parseNumber();
+    test(result).toEqual(0.1);
+  });
+
+  it('should parse a number in scientific notation', () => {
+    const data = `0.955654E-01`;
+    setInput(data);
+    const result = parseNumber();
+    test(result).toEqual(0.0955654);
+  });
+
+  it('should parse a number in scientific notation', () => {
+    const data = `-1.000000e+000`;
+    setInput(data);
+    const result = parseNumber();
+    test(result).toEqual(-1);
   });
 });
 
@@ -123,6 +151,32 @@ describe('parse float', () => {
     test(result).toEqual(-42.84);
   });
 });
+
+describe('scientific notation', () => {
+  it('should parse a number in scientific notation', () => {
+    const data = `1E-1`;
+    setInput(data);
+    const result = parseScientificNumber();
+    test(result).toEqual(0.1);
+  });
+
+  it('should parse a number in scientific notation', () => {
+    const data = `0.955654E-01`;
+    setInput(data);
+    const result = parseScientificNumber();
+    test(result).toEqual(0.0955654);
+  });
+
+  it('should parse a number in scientific notation', () => {
+    const data = `-1.000000e+000`;
+    setInput(data);
+    const result = parseScientificNumber();
+    test(result).toEqual(-1);
+  });
+  
+  
+});
+
 
 // test digit
 describe('parseDigit', () => {

@@ -13,6 +13,7 @@ export function getIndex() {
 
 export function parseSolid(data) {
   input = data;
+  index = 0;
   console.time('parsing');
   any(space);
   expect('solid');
@@ -65,11 +66,16 @@ export function parseFacet() {
 }
 
 export function parseScientificNumber() {
+  logging && console.log('parseScientificNumber', index);
   const start = index;
   optional(() => expect('-'));
   many(digit);
-  expect('.');
-  many(digit);
+
+  optional(() => {
+    expect('.');
+    many(digit);
+  })
+
   either(
     () => expect('e'),
     () => expect('E')
@@ -89,25 +95,11 @@ export function parseVertex() {
   any(whitespace);
   const line = parseLine();
   if (logging) console.log('line', line);
-  const parts = line.split(' ');
+  const parts = line.split(/\s+/);
   if (logging) console.log(parts);
   const x = tryParseFloat(parts[1]);
   const y = tryParseFloat(parts[2]);
   const z = tryParseFloat(parts[3]);
-
-  // many(whitespace);
-  // expect('vertex');
-  // many(space);
-
-  // const x = parseNumber();
-
-  // many(space);
-  // const y = parseNumber();
-
-  // many(space);
-  // const z = parseNumber();
-
-  // expect('\n');
 
   return { x, y, z };
 }
@@ -144,7 +136,7 @@ export function expect(str) {
   while (localIndex < str.length) {
     const expected = str[localIndex];
     const actual = input[index + localIndex];
-    logging && console.log(`expected: '${expected}' got '${actual}'`);
+    // logging && console.log(`expected: '${expected}' got '${actual}'`);
     if (expected != actual)
       throw new ParseError(
         `expected '${expected}' (${expected.charCodeAt(
@@ -253,9 +245,12 @@ export function digit() {
 }
 
 function either(p1, p2) {
+  const savedIndex = index;
   try {
     return p1();
   } catch (ParseError) {
+    logging && console.log('either: p1 failed');
+    index = savedIndex; // reset index. not sure if needed
     return p2();
   }
 }
@@ -268,10 +263,11 @@ export function sequence(p1, p2) {
 
 export function parseNumber() {
   logging && console.log('parseNumber');
-  return either(parseFPNumber, parseScientificNumber);
+  return either(parseScientificNumber, parseFPNumber);
 }
 
 export function parseFPNumber() {
+  logging && console.log('parseFPNumber', index);
   const start = index;
   optional(() => expect('-'));
   optional(() => sequence(() => many(digit), () => expect('.') ) );
